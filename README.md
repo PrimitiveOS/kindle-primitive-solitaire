@@ -1,6 +1,6 @@
 <div align="center">
 
-# Primitive Solitaire
+# Solitaire
 
 **Klondike for jailbroken Kindle e-readers.**
 
@@ -35,7 +35,7 @@ to distinguish on grayscale e-ink.
 ## Quick start
 
 For a local USB test, extract the ARMHF test package and copy the `solitaire` and `documents` folders to the
-Kindle's user storage. Eject the Kindle and open Primitive Solitaire from the Primitive Launcher grid.
+Kindle's user storage. Eject the Kindle and open Solitaire from the Primitive Launcher grid.
 The app uses fonts installed with Primitive Launcher. [Install guide](INSTALL.md)
 
 ## Status

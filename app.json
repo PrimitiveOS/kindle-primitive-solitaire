@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "primitive-solitaire",
   "dir": "solitaire",
-  "name": "Primitive Solitaire",
+  "name": "Solitaire",
   "subtitle": "Play Klondike on Kindle",
   "developer": { "name": "Primitive AI" },
   "categories": ["games"],

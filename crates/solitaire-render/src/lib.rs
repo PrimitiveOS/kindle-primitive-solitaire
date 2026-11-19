@@ -149,7 +149,7 @@ impl View {
 
 impl App for View {
     fn draw(&self, canvas: &mut Canvas) {
-        header(canvas, "Primitive Solitaire", "Done");
+        header(canvas, "Solitaire", "Done");
         canvas.text(
             Rect::new(40, 185, 700, 64),
             "Klondike",

@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+pub const UNDO_LIMIT: usize = 100;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Card(pub u8);
 
@@ -43,6 +45,14 @@ pub struct Board {
     pub draw_three: bool,
 }
 
+#[derive(Serialize, Deserialize)]
+struct SavedDeal<B, U> {
+    #[serde(flatten)]
+    board: B,
+    #[serde(default)]
+    undo: U,
+}
+
 impl Board {
     pub fn new(mut seed: u64, draw_three: bool) -> Self {
         let mut stock = (0..52).map(Card).collect::<Vec<_>>();
@@ -76,6 +86,31 @@ impl Board {
             .ok()
             .filter(Self::valid);
         decoded.unwrap_or_else(|| Self::new(seed, false))
+    }
+
+    pub fn encoded_with_undo(&self, undo: &[Self]) -> Vec<u8> {
+        let recent = &undo[undo.len().saturating_sub(UNDO_LIMIT)..];
+        serde_json::to_vec(&SavedDeal {
+            board: self,
+            undo: recent,
+        })
+        .expect("deal contains serializable cards")
+    }
+
+    pub fn restore_with_undo(data: &[u8], seed: u64) -> (Self, Vec<Self>) {
+        let Some(SavedDeal { board, mut undo }) =
+            serde_json::from_slice::<SavedDeal<Self, Vec<Self>>>(data)
+                .ok()
+                .filter(|deal| deal.board.valid())
+        else {
+            return (Self::restore(data, seed), Vec::new());
+        };
+        undo.drain(..undo.len().saturating_sub(UNDO_LIMIT));
+        if let Some(invalid) = undo.iter().rposition(|board| !board.valid()) {
+            // Keep the contiguous history closest to the current deal.
+            undo.drain(..=invalid);
+        }
+        (board, undo)
     }
 
     fn valid(&self) -> bool {
@@ -252,6 +287,30 @@ mod tests {
         assert!(game.draw());
         assert_eq!(game.waste.len(), 3);
         assert_eq!(Board::restore(&game.encoded(), 0).stock, game.stock);
+    }
+
+    #[test]
+    fn saved_undo_preserves_the_current_deal_and_keeps_only_recent_valid_history() {
+        let deal = Board::new(30, true);
+        let (legacy, undo) = Board::restore_with_undo(&deal.encoded(), 1);
+        assert_eq!(legacy.encoded(), deal.encoded());
+        assert!(undo.is_empty());
+
+        let mut history: Vec<_> = (0..(UNDO_LIMIT + 2))
+            .map(|seed| Board::new(seed as u64, false))
+            .collect();
+        let saved = deal.encoded_with_undo(&history);
+        assert_eq!(Board::restore(&saved, 1).encoded(), deal.encoded());
+        let (restored, undo) = Board::restore_with_undo(&saved, 1);
+        assert_eq!(restored.encoded(), deal.encoded());
+        assert_eq!(undo.len(), UNDO_LIMIT);
+        assert_eq!(undo[0].encoded(), history[2].encoded());
+
+        let invalid = history.len() - 2;
+        history[invalid].stock.clear();
+        let (_, undo) = Board::restore_with_undo(&deal.encoded_with_undo(&history), 1);
+        assert_eq!(undo.len(), 1);
+        assert_eq!(undo[0].encoded(), history.last().unwrap().encoded());
     }
 
     #[test]

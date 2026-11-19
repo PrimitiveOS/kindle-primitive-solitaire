@@ -1,12 +1,12 @@
 use std::{
-    io,
+    fs, io,
     path::PathBuf,
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use primitive_app::{App, Change};
 use primitive_ui::{back_button, header, Canvas, Input, Rect, TextStyle, CAPTION};
-use solitaire_core::{Board, Card, Destination, Source};
+use solitaire_core::{Board, Card, Destination, Source, UNDO_LIMIT};
 
 pub struct View {
     pub board: Board,
@@ -36,6 +36,13 @@ impl View {
         }
     }
 
+    pub fn load(data: PathBuf) -> Self {
+        let (board, undo) = Board::restore_with_undo(&fs::read(&data).unwrap_or_default(), seed());
+        let mut view = Self::new(board, Some(data));
+        view.undo = undo;
+        view
+    }
+
     const STOCK: Rect = Rect::new(40, 290, 154, 190);
     const WASTE: Rect = Rect::new(212, 290, 154, 190);
     const UNDO: Rect = Rect::new(42, 1460, 310, 100);
@@ -62,10 +69,29 @@ impl View {
         Rect::new(40 + 170 * column as i32, 530 + step * row as i32, 154, 160)
     }
 
-    fn draw_card(canvas: &mut Canvas, rect: Rect, card: Option<Card>, selected: bool, label: &str) {
-        let paper = if selected { 0 } else { 255 };
-        let ink = if selected { 255 } else { 0 };
-        canvas.panel(rect, 14, if selected { 5 } else { 2 }, paper);
+    fn visible_card_rect(column: usize, row: usize, cards: usize) -> Rect {
+        let mut rect = Self::card_rect(column, row, cards);
+        if row + 1 < cards {
+            rect.h = Self::card_rect(column, row + 1, cards).y - rect.y;
+        }
+        rect
+    }
+
+    fn draw_card(
+        canvas: &mut Canvas,
+        rect: Rect,
+        card: Option<Card>,
+        selected: bool,
+        control: Option<Rect>,
+        label: &str,
+    ) -> bool {
+        let pressed = control.is_some_and(|visible| canvas.control_pressed(visible, false));
+        let (paper, ink) = match (selected, pressed) {
+            (true, true) => (85, 255),
+            (true, false) | (false, true) => (0, 255),
+            (false, false) => (255, 0),
+        };
+        canvas.panel(rect, 14, if selected || pressed { 5 } else { 2 }, paper);
         let text = card.map_or_else(
             || label.to_owned(),
             |card| match card.rank() {
@@ -88,11 +114,12 @@ impl View {
                 ink,
             );
         }
+        pressed
     }
 
     fn save_move(&mut self, previous: Board) -> Change {
         self.undo.push(previous);
-        if self.undo.len() > 100 {
+        if self.undo.len() > UNDO_LIMIT {
             self.undo.remove(0);
         }
         self.selected = None;
@@ -138,11 +165,15 @@ impl App for View {
             false,
             false,
         );
+        let accepts_taps = !self.confirm_deal;
+        let moving = self.selected.is_some();
+        let can_draw = !self.board.stock.is_empty() || !self.board.waste.is_empty();
         Self::draw_card(
             canvas,
             Self::STOCK,
             None,
             false,
+            (accepts_taps && can_draw).then_some(Self::STOCK),
             if self.board.stock.is_empty() {
                 "Again"
             } else {
@@ -154,36 +185,58 @@ impl App for View {
             Self::WASTE,
             self.board.waste.last().copied(),
             self.selected == Some(Source::Waste),
+            (accepts_taps && !self.board.waste.is_empty()).then_some(Self::WASTE),
             "",
         );
         for (suit, pile) in self.board.foundations.iter().enumerate() {
-            Self::draw_card(
+            let rect = Self::foundation(suit);
+            let pressed = Self::draw_card(
                 canvas,
-                Self::foundation(suit),
+                rect,
                 pile.last().copied(),
                 self.selected == Some(Source::Foundation(suit)),
+                (accepts_taps && (moving || !pile.is_empty())).then_some(rect),
                 "",
             );
             if pile.is_empty() {
-                let rect = Self::foundation(suit);
                 canvas.icon(
                     Rect::new(rect.x + 53, rect.y + 66, 48, 48),
                     Self::SUITS[suit],
-                    85,
+                    if pressed { 255 } else { 85 },
                 );
             }
         }
         for (column, cards) in self.board.columns.iter().enumerate() {
             if cards.is_empty() {
-                Self::draw_card(canvas, Self::card_rect(column, 0, 0), None, false, "");
+                let rect = Self::card_rect(column, 0, 0);
+                Self::draw_card(
+                    canvas,
+                    rect,
+                    None,
+                    false,
+                    (accepts_taps && moving).then_some(rect),
+                    "",
+                );
             }
             for (row, card) in cards.iter().enumerate() {
                 let selected = matches!(self.selected, Some(Source::Column(c, start)) if c == column && row >= start);
                 let rect = Self::card_rect(column, row, cards.len());
-                Self::draw_card(canvas, rect, card.open.then_some(card.card), selected, "");
+                let control = (accepts_taps && (moving || card.open))
+                    .then(|| Self::visible_card_rect(column, row, cards.len()));
+                let pressed = Self::draw_card(
+                    canvas,
+                    rect,
+                    card.open.then_some(card.card),
+                    selected,
+                    control,
+                    "",
+                );
                 if !card.open {
                     for line in 0..3 {
-                        canvas.fill(Rect::new(rect.x + 30, rect.y + 13 + line * 7, 94, 2), 85);
+                        canvas.fill(
+                            Rect::new(rect.x + 30, rect.y + 13 + line * 7, 94, 2),
+                            if pressed { 255 } else { 85 },
+                        );
                     }
                 }
             }
@@ -294,9 +347,8 @@ impl App for View {
             if self.try_move(Destination::Column(column)) {
                 return Change::Partial;
             }
-            let row = (0..len)
-                .rev()
-                .find(|&row| Self::card_rect(column, row, len).contains(x, y));
+            let row =
+                (0..len).find(|&row| Self::visible_card_rect(column, row, len).contains(x, y));
             self.selected = row
                 .filter(|row| self.board.columns[column][*row].open)
                 .map(|row| Source::Column(column, row));
@@ -308,8 +360,47 @@ impl App for View {
 
     fn save(&mut self) -> io::Result<()> {
         if let Some(path) = &self.data {
-            primitive_app::save(path, &self.board.encoded())?;
+            primitive_app::save(path, &self.board.encoded_with_undo(&self.undo))?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_the_visible_card_owns_each_touch_point_in_an_overlapping_column() {
+        let covered = View::card_rect(0, 0, 2);
+        let drawn_on_top = View::card_rect(0, 1, 2);
+        let x = (covered.x + covered.w / 2) as f32;
+        let overlap = (drawn_on_top.y + 1) as f32;
+        assert!(covered.contains(x, overlap));
+        assert!(!View::visible_card_rect(0, 0, 2).contains(x, overlap));
+        assert!(View::visible_card_rect(0, 1, 2).contains(x, overlap));
+    }
+
+    #[test]
+    fn relaunch_preserves_undo_and_saves_the_undone_deal() {
+        let data = std::env::temp_dir().join(format!(
+            "primitive-solitaire-deal-{}-{}.json",
+            std::process::id(),
+            seed()
+        ));
+        let board = Board::new(39, false);
+        let original = board.encoded();
+        let mut view = View::new(board, Some(data.clone()));
+        assert_eq!(view.input(Input::Tap(90.0, 315.0)), Change::Partial);
+
+        let mut restored = View::load(data.clone());
+        assert_eq!(restored.board.waste.len(), 1);
+        assert_eq!(restored.input(Input::Tap(100.0, 1490.0)), Change::Partial);
+        assert_eq!(restored.board.encoded(), original);
+
+        let mut reopened = View::load(data.clone());
+        assert_eq!(reopened.board.encoded(), original);
+        assert_eq!(reopened.input(Input::Tap(100.0, 1490.0)), Change::None);
+        fs::remove_file(data).unwrap();
     }
 }

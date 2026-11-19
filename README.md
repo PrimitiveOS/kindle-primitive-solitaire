@@ -41,7 +41,8 @@ The app uses fonts installed with Primitive Launcher. [Install guide](INSTALL.md
 ## Status
 
 Desktop tests and previews passed on macOS, and the ARMHF package passed the local Store fixture.
-Kindle hardware verification is pending. [Device notes](docs/device-notes.md)
+On an ARMHF Kindle Oasis 3 running firmware 5.18.2, Solitaire showed the new-deal confirmation, preserved the
+original deal after Cancel, and returned to Launcher. [Device notes](docs/device-notes.md)
 
 ## Develop locally
 

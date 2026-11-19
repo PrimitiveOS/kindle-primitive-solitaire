@@ -18,6 +18,7 @@ impl Card {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Source {
     Waste,
+    Foundation(usize),
     Column(usize, usize),
 }
 
@@ -95,6 +96,11 @@ impl Board {
             }
         }
         seen.into_iter().all(|card| card)
+            && self.foundations.iter().enumerate().all(|(suit, pile)| {
+                pile.iter()
+                    .enumerate()
+                    .all(|(rank, card)| card.suit() == suit && usize::from(card.rank()) == rank + 1)
+            })
             && self
                 .columns
                 .iter()
@@ -120,6 +126,13 @@ impl Board {
     pub fn move_cards(&mut self, from: Source, to: Destination) -> bool {
         let mut moving = match from {
             Source::Waste => self.waste.last().copied().into_iter().collect::<Vec<_>>(),
+            Source::Foundation(suit) => self
+                .foundations
+                .get(suit)
+                .and_then(|pile| pile.last())
+                .copied()
+                .into_iter()
+                .collect(),
             Source::Column(column, row) => {
                 let Some(cards) = self
                     .columns
@@ -173,6 +186,9 @@ impl Board {
         match from {
             Source::Waste => {
                 self.waste.pop();
+            }
+            Source::Foundation(suit) => {
+                self.foundations[suit].pop();
             }
             Source::Column(column, row) => {
                 self.columns[column].truncate(row);

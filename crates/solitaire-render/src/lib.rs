@@ -68,15 +68,12 @@ impl View {
         canvas.panel(rect, 14, if selected { 5 } else { 2 }, paper);
         let text = card.map_or_else(
             || label.to_owned(),
-            |card| {
-                let rank = match card.rank() {
-                    1 => "A".into(),
-                    11 => "J".into(),
-                    12 => "Q".into(),
-                    13 => "K".into(),
-                    rank => rank.to_string(),
-                };
-                rank
+            |card| match card.rank() {
+                1 => "A".into(),
+                11 => "J".into(),
+                12 => "Q".into(),
+                13 => "K".into(),
+                rank => rank.to_string(),
             },
         );
         canvas.text(
@@ -159,15 +156,15 @@ impl App for View {
             self.selected == Some(Source::Waste),
             "",
         );
-        for suit in 0..4 {
+        for (suit, pile) in self.board.foundations.iter().enumerate() {
             Self::draw_card(
                 canvas,
                 Self::foundation(suit),
-                self.board.foundations[suit].last().copied(),
-                false,
+                pile.last().copied(),
+                self.selected == Some(Source::Foundation(suit)),
                 "",
             );
-            if self.board.foundations[suit].is_empty() {
+            if pile.is_empty() {
                 let rect = Self::foundation(suit);
                 canvas.icon(
                     Rect::new(rect.x + 53, rect.y + 66, 48, 48),
@@ -184,6 +181,11 @@ impl App for View {
                 let selected = matches!(self.selected, Some(Source::Column(c, start)) if c == column && row >= start);
                 let rect = Self::card_rect(column, row, cards.len());
                 Self::draw_card(canvas, rect, card.open.then_some(card.card), selected, "");
+                if !card.open {
+                    for line in 0..3 {
+                        canvas.fill(Rect::new(rect.x + 30, rect.y + 13 + line * 7, 94, 2), 85);
+                    }
+                }
             }
         }
         let message = if self.board.complete() {
@@ -269,7 +271,13 @@ impl App for View {
         }
         for suit in 0..4 {
             if Self::foundation(suit).contains(x, y) {
-                self.try_move(Destination::Foundation(suit));
+                if !self.try_move(Destination::Foundation(suit))
+                    && !self.board.foundations[suit].is_empty()
+                {
+                    self.selected = Some(Source::Foundation(suit))
+                        .filter(|source| self.selected != Some(*source));
+                    self.notice.clear();
+                }
                 return Change::Partial;
             }
         }

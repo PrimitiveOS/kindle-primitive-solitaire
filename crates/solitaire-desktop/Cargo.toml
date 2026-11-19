@@ -1,0 +1,11 @@
+[package]
+name = "solitaire-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+solitaire-core.workspace = true
+solitaire-render.workspace = true
+primitive-app.workspace = true
+primitive-ui.workspace = true

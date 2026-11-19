@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "id": "primitive-solitaire",
+  "dir": "solitaire",
+  "name": "Primitive Solitaire",
+  "subtitle": "Play Klondike on Kindle",
+  "developer": { "name": "Primitive AI" },
+  "categories": ["games"],
+  "description": "Play draw-one or draw-three Klondike with tap controls and undo.",
+  "repo": "https://github.com/DoanNguyenTrong/kindle-primitive-solitaire",
+  "licence": "PolyForm-Noncommercial-1.0.0",
+  "source": "hosted",
+  "icon": "icon.png",
+  "changes": { "network": false, "stops_kindle_ui": false, "starts_at_boot": false, "root_filesystem": false, "hooks": false },
+  "versions": []
+}

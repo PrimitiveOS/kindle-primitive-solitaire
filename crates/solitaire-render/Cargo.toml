@@ -1,0 +1,11 @@
+[package]
+name = "solitaire-render"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+solitaire-core.workspace = true
+primitive-app.workspace = true
+primitive-ui.workspace = true
+primitive-quick = { path = "../../../doannt-kindle-tools/crates/primitive-quick" }

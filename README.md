@@ -34,9 +34,8 @@ to distinguish on grayscale e-ink.
 
 ## Quick start
 
-For a local USB test, extract the ARMHF test package and copy the `solitaire` and `documents` folders to the
-Kindle's user storage. Eject the Kindle and open Solitaire from the Primitive Launcher grid.
-The app uses fonts installed with Primitive Launcher. [Install guide](INSTALL.md)
+After setting up PrimitiveOS, open **Store** from Primitive Launcher. Choose **Solitaire** under **Apps**,
+tap **Get**, and open it from the Launcher grid. The [install guide](INSTALL.md) also covers local USB testing.
 
 ## Status
 

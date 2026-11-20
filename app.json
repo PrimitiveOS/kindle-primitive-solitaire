@@ -7,7 +7,7 @@
   "developer": { "name": "Primitive AI" },
   "categories": ["games"],
   "description": "Play draw-one or draw-three Klondike with tap controls and undo.",
-  "repo": "https://github.com/DoanNguyenTrong/kindle-primitive-solitaire",
+  "repo": "https://github.com/PrimitiveOS/kindle-primitive-solitaire",
   "licence": "PolyForm-Noncommercial-1.0.0",
   "source": "hosted",
   "icon": "icon.png",

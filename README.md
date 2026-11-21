@@ -4,7 +4,12 @@
 
 **Play Klondike on Kindle**
 
-[![Release](https://img.shields.io/github/v/release/PrimitiveOS/kindle-primitive-solitaire?label=release)](https://github.com/PrimitiveOS/kindle-primitive-solitaire/releases) [![Licence: PolyForm-Noncommercial-1.0.0](https://img.shields.io/badge/licence-PolyForm--Noncommercial--1.0.0-blue)](LICENSE) [![Store downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fprimitiveos.github.io%2Fkindle-primitive-catalog%2Fv1%2Fbadges%2Fprimitive-solitaire.json)](https://primitiveos.github.io/kindle-primitive-catalog/v1/index.json)
+[![CI](https://img.shields.io/github/actions/workflow/status/PrimitiveOS/kindle-primitive-solitaire/ci.yml?branch=main&label=CI)](https://github.com/PrimitiveOS/kindle-primitive-solitaire/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/PrimitiveOS/kindle-primitive-solitaire?label=release)](https://github.com/PrimitiveOS/kindle-primitive-solitaire/releases)
+[![Tag](https://img.shields.io/github/v/tag/PrimitiveOS/kindle-primitive-solitaire?label=tag)](https://github.com/PrimitiveOS/kindle-primitive-solitaire/tags)
+[![Licence: PolyForm-Noncommercial-1.0.0](https://img.shields.io/badge/licence-PolyForm--Noncommercial--1.0.0-blue)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/PrimitiveOS/kindle-primitive-solitaire?style=social)](https://github.com/PrimitiveOS/kindle-primitive-solitaire/stargazers)
+[![Store downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fprimitiveos.github.io%2Fkindle-primitive-catalog%2Fv1%2Fbadges%2Fprimitive-solitaire.json)](https://primitiveos.github.io/kindle-primitive-catalog/v1/index.json)
 
 [**Download**](https://github.com/PrimitiveOS/kindle-primitive-solitaire/releases/latest) · [**Install guide**](INSTALL.md) · [**Changelog**](CHANGELOG.md)
 

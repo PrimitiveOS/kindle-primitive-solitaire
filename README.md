@@ -4,7 +4,7 @@
 
 **Play Klondike on Kindle**
 
-[![Release](https://img.shields.io/github/v/release/PrimitiveOS/kindle-primitive-solitaire?label=release)](https://github.com/PrimitiveOS/kindle-primitive-solitaire/releases) [![Licence: PolyForm-Noncommercial-1.0.0](https://img.shields.io/badge/licence-PolyForm--Noncommercial--1.0.0-blue)](LICENSE) [![Store downloads](https://img.shields.io/badge/Store%20downloads-32-brightgreen)](https://primitiveos.github.io/kindle-primitive-catalog/v1/index.json)
+[![Release](https://img.shields.io/github/v/release/PrimitiveOS/kindle-primitive-solitaire?label=release)](https://github.com/PrimitiveOS/kindle-primitive-solitaire/releases) [![Licence: PolyForm-Noncommercial-1.0.0](https://img.shields.io/badge/licence-PolyForm--Noncommercial--1.0.0-blue)](LICENSE) [![Store downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fprimitiveos.github.io%2Fkindle-primitive-catalog%2Fv1%2Fbadges%2Fprimitive-solitaire.json)](https://primitiveos.github.io/kindle-primitive-catalog/v1/index.json)
 
 [**Download**](https://github.com/PrimitiveOS/kindle-primitive-solitaire/releases/latest) · [**Install guide**](INSTALL.md) · [**Changelog**](CHANGELOG.md)
 
@@ -56,8 +56,7 @@ cargo run --offline --locked -p solitaire-desktop
 
 ## Downloads
 
-**32 downloads** from Store, as of 2026-11-21. Store shows the same count on the app page.
-The count is GitHub downloads of this app's release packages, from the [Store catalog](https://primitiveos.github.io/kindle-primitive-catalog/v1/index.json).
+The badge at the top shows the number of Store downloads. It counts GitHub downloads of this app's release packages, across all versions and architectures, and is refreshed daily from the [Store catalog](https://primitiveos.github.io/kindle-primitive-catalog/v1/index.json).
 
 ## Documentation
 

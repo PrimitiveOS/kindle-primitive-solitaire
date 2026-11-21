@@ -86,10 +86,10 @@ impl View {
         label: &str,
     ) -> bool {
         let pressed = control.is_some_and(|visible| canvas.control_pressed(visible, false));
+        // A tap reverses the card: a selected card turns white while it is held, an unselected one turns black.
         let (paper, ink) = match (selected, pressed) {
-            (true, true) => (85, 255),
+            (true, true) | (false, false) => (255, 0),
             (true, false) | (false, true) => (0, 255),
-            (false, false) => (255, 0),
         };
         canvas.panel(rect, 14, if selected || pressed { 5 } else { 2 }, paper);
         let text = card.map_or_else(
